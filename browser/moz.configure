@@ -72,6 +72,21 @@ def enable_enterprise(value):
 set_config("MOZ_ENTERPRISE", enable_enterprise)
 set_define("MOZ_ENTERPRISE", enable_enterprise)
 
+
+# Permit standalone launch only for non shipping builds
+@depends(enable_enterprise, update_channel)
+def enterprise_standalone_launch(enterprise, channel):
+    if enterprise and channel not in (
+        "release-enterprise",
+        "beta-enterprise",
+        "nightly-enterprise",
+    ):
+        return True
+
+
+set_define("MOZ_ENTERPRISE_STANDALONE_LAUNCH", enterprise_standalone_launch)
+
+
 # Clear the default value to avoid mozilla.com url compiled into product
 imply_option("--with-crashreporter-url", "", when="--enable-enterprise")
 

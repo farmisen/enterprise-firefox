@@ -6987,6 +6987,7 @@ int XREMain::XRE_main(int argc, char* argv[], const BootstrapConfig& aConfig) {
     bool allowStandaloneLaunch = false;
 #  endif
 
+#  ifdef MOZ_ENTERPRISE_STANDALONE_LAUNCH
     const bool requestedHeadless = RequestedHeadlessMode();
     // Allow standalone launch for automated testing and development
     allowStandaloneLaunch =
@@ -6994,6 +6995,7 @@ int XREMain::XRE_main(int argc, char* argv[], const BootstrapConfig& aConfig) {
         PR_GetEnv("MOZ_RUN_GTEST") || requestedHeadless ||
         CheckArgExists("marionette") ||
         CheckArgExists("remote-debugging-port") || IsLaunchingBrowserDevtools();
+#  endif
 
     if (!allowStandaloneLaunch && !is_felt_ui() && !is_felt_browser()) {
       Output(true,
