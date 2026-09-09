@@ -1,3 +1,11 @@
 // Firefox enterprise AutoConfig. The first line is intentionally skipped by
 // the AutoConfig parser; managed preferences belong on the lines below.
 lockPref("enterprise.console.address", "@MOZ_ENTERPRISE_CONSOLE_URL@");
+
+// AutoConfig and enterprise policy source preferences, locked to their
+// defaults.
+lockPref("general.config.filename", "firefox.cfg"); // AutoConfig file name
+lockPref("general.config.vendor", "firefox"); // AutoConfig vendor check value
+lockPref("autoadmin.global_config_url", ""); // remote AutoConfig URL
+lockPref("toolkit.policies.perUserDir", false); // per-user policy directory
+lockPref("enterprise.policies.live.enabled", false); // live (console) policy provider
