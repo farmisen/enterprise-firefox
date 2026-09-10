@@ -8,4 +8,3 @@ lockPref("general.config.filename", "firefox.cfg"); // AutoConfig file name
 lockPref("general.config.vendor", "firefox"); // AutoConfig vendor check value
 lockPref("autoadmin.global_config_url", ""); // remote AutoConfig URL
 lockPref("toolkit.policies.perUserDir", false); // per-user policy directory
-lockPref("enterprise.policies.live.enabled", false); // live (console) policy provider
