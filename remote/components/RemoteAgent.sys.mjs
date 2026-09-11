@@ -20,7 +20,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
 ChromeUtils.defineLazyGetter(lazy, "logger", () => lazy.Log.get());
 
 // A remote client with system access can run privileged JavaScript in the parent
-// process and undo enterprise policy. Deny it on non-default enterprise builds.
+// process and any other privileged context, such as WebExtension processes, and
+// undo enterprise policy. Deny it on non-default enterprise builds.
 const PREVENT_SYSTEM_ACCESS =
   AppConstants.MOZ_ENTERPRISE && AppConstants.MOZ_UPDATE_CHANNEL !== "default";
 
