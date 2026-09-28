@@ -443,6 +443,97 @@ function setupMarionetteEnvironment() {
   }
 }
 
+function isPaneShowing() {
+  const pane = document.querySelector(".felt-login__portal");
+  return !pane.classList.contains("is-hidden");
+}
+
+function showInPane(aURI, aTriggeringPrincipal) {
+  const pane = document.querySelector(".felt-login__portal");
+  pane.classList.remove("is-hidden");
+  const browser = document.getElementById("portal-browser");
+  // Carry the opener's triggering principal to apply the load checks the
+  // original open would have gotten.
+  browser.fixupAndLoadURIString(aURI.spec, {
+    triggeringPrincipal:
+      aTriggeringPrincipal ??
+      Services.scriptSecurityManager.createNullPrincipal({
+        privateBrowsingId: lazy.FeltCommon.PRIVATE_BROWSING_ID,
+      }),
+  });
+  browser.focus();
+}
+
+function closePane() {
+  const pane = document.querySelector(".felt-login__portal");
+  pane.classList.add("is-hidden");
+  document
+    .getElementById("portal-browser")
+    .fixupAndLoadURIString("about:blank", {
+      triggeringPrincipal: Services.scriptSecurityManager.createNullPrincipal({
+        privateBrowsingId: lazy.FeltCommon.PRIVATE_BROWSING_ID,
+      }),
+    });
+  document.getElementById("browser").focus();
+}
+
+// Prevents content window.open() calls from opening a browser.xhtml window,
+// and tries to show the URL in the Felt UI pane instead.
+const FeltBrowserDOMWindow = {
+  QueryInterface: ChromeUtils.generateQI(["nsIBrowserDOMWindow"]),
+
+  _tryShowInPane(aURI, aTriggeringPrincipal) {
+    if (aURI) {
+      try {
+        showInPane(aURI, aTriggeringPrincipal);
+        lazy.log.debug(
+          `Felt window.open shown in the contained pane: ${aURI.spec}`
+        );
+      } catch (e) {
+        lazy.log.error(
+          "Failed to show a Felt window.open in the contained pane",
+          e
+        );
+      }
+    }
+    // Throw to abort the open
+    throw Components.Exception(
+      "Opening browser windows is not allowed in the Felt UI",
+      Cr.NS_ERROR_NOT_AVAILABLE
+    );
+  },
+
+  createContentWindow(aURI, aOpenWindowInfo, aWhere, aFlags, aPrincipal) {
+    return this._tryShowInPane(aURI, aPrincipal);
+  },
+
+  createContentWindowInFrame(aURI, aParams) {
+    return this._tryShowInPane(aURI, aParams?.triggeringPrincipal);
+  },
+
+  openURI(aURI, aOpenWindowInfo, aWhere, aFlags, aPrincipal) {
+    return this._tryShowInPane(aURI, aPrincipal);
+  },
+
+  openURIInFrame(aURI, aParams) {
+    return this._tryShowInPane(aURI, aParams?.triggeringPrincipal);
+  },
+
+  canClose() {
+    return true;
+  },
+
+  get tabCount() {
+    return 1;
+  },
+};
+
+// Routes window.open() with features through nsIBrowserDOMWindow.
+function setupBrowserDOMWindow() {
+  window.browserDOMWindow = FeltBrowserDOMWindow;
+  Services.prefs.setIntPref("browser.link.open_newwindow.restriction", 0);
+}
+
 function setupContextMenu() {
   const contextMenu = document.getElementById("textbox-contextmenu");
   if (!contextMenu) {
@@ -592,6 +683,10 @@ function macosActivateApplication() {
 function setupBackButton() {
   const backButton = document.getElementById("felt-back-button");
   backButton.addEventListener("click", async () => {
+    if (isPaneShowing()) {
+      closePane();
+      return;
+    }
     resetToLoginPage();
     await clearSsoSessionData();
     document.getElementById("browser").fixupAndLoadURIString("about:blank", {
@@ -606,6 +701,7 @@ window.addEventListener(
     setBuildVersion();
     lazy.FeltErrorReport.init(document);
     setupMarionetteEnvironment();
+    setupBrowserDOMWindow();
     setupPopupNotifications();
     setupContextMenu();
     setupBackButton();

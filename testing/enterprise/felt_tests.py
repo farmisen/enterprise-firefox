@@ -141,6 +141,30 @@ class SsoHttpHandler(LocalHttpRequestHandler):
 </html>
             """
 
+        elif path == "/popup_opener":
+            # Opens a popup from a real click, so the open is not dropped by
+            # the popup blocker before it reaches nsIBrowserDOMWindow.
+            m = """
+<html>
+<head>
+    <title>Popup opener</title>
+</head>
+<body>
+    <button id="open-plain">plain</button>
+    <button id="open-features">features</button>
+    <script>
+      const target = new URL("/watermark_blank_page", location.href).href;
+      document.getElementById("open-plain").addEventListener("click", () => {
+        window.open(target, "_blank");
+      });
+      document.getElementById("open-features").addEventListener("click", () => {
+        window.open(target, "_blank", "width=500,height=400");
+      });
+    </script>
+</body>
+</html>
+            """
+
         elif path == "/watermark_blank_page":
             # Blank, full-viewport page used to verify the on-screen watermark
             # is actually painted (its anonymous content isn't in the DOM).
