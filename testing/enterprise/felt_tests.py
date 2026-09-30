@@ -152,6 +152,7 @@ class SsoHttpHandler(LocalHttpRequestHandler):
 <body>
     <button id="open-plain">plain</button>
     <button id="open-features">features</button>
+    <button id="open-cookie">cookie</button>
     <script>
       const target = new URL("/watermark_blank_page", location.href).href;
       document.getElementById("open-plain").addEventListener("click", () => {
@@ -160,8 +161,22 @@ class SsoHttpHandler(LocalHttpRequestHandler):
       document.getElementById("open-features").addEventListener("click", () => {
         window.open(target, "_blank", "width=500,height=400");
       });
+      document.getElementById("open-cookie").addEventListener("click", () => {
+        window.open(new URL("/cookie_page", location.href).href, "_blank");
+      });
     </script>
 </body>
+</html>
+            """
+
+        elif path == "/cookie_page":
+            m = """
+<html>
+<head>
+    <title>Cookie page</title>
+    <script>document.cookie = "window_open_cookie=1; path=/";</script>
+</head>
+<body></body>
 </html>
             """
 
