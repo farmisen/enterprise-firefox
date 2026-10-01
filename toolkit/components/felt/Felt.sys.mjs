@@ -236,6 +236,8 @@ export class Felt {
       // their main thread demoted to low-priority QoS, which can starve the
       // SSO callback's DOMContentLoaded event and prevent token extraction.
       Services.prefs.setBoolPref("threads.use_low_power.enabled", false);
+      // Turn off every DevTools entry point.
+      Services.prefs.setBoolPref("devtools.policy.disabled", true);
       await lazy.FeltStorage.init();
       if (await lazy.FeltStorage.recoverInterruptedSession()) {
         lazy.log.warn(
